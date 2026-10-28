@@ -20,7 +20,7 @@ body {
   font-family: var(--font-sans);
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  line-height: 1.5;
+  line-height: 1.55;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
@@ -28,29 +28,100 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Background Atmosphere Glow Effect */
+/* ═══════════════════════════════════════════
+   Animated Multi-Layer Mesh Gradient Background
+   Creates a living, breathing premium atmosphere
+   ═══════════════════════════════════════════ */
+
+/* Layer 1: Top-left indigo glow */
 body::before {
   content: '';
   position: fixed;
-  top: -10vw;
-  left: 20vw;
-  width: 60vw;
-  height: 40vw;
-  background: var(--grad-glow);
+  top: -15%;
+  left: -10%;
+  width: 65vw;
+  height: 65vw;
+  background: radial-gradient(ellipse, rgba(99, 102, 241, 0.2) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.65;
+  animation: meshFloat1 18s ease-in-out infinite alternate;
+  filter: blur(60px);
+}
+
+/* Layer 2: Top-right pink glow */
+body::after {
+  content: '';
+  position: fixed;
+  top: -5%;
+  right: -15%;
+  width: 55vw;
+  height: 55vw;
+  background: radial-gradient(ellipse, rgba(236, 72, 153, 0.14) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+  animation: meshFloat2 22s ease-in-out infinite alternate;
+  filter: blur(70px);
+}
+
+/* Layer 3: Bottom cyan glow — using the app-shell pseudo */
+.app-shell::before {
+  content: '';
+  position: fixed;
+  bottom: -20%;
+  left: 25%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(ellipse, rgba(6, 182, 212, 0.12) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+  animation: meshFloat3 25s ease-in-out infinite alternate;
   filter: blur(80px);
 }
 
-/* Accessibility Focus Rings */
+/* Layer 4: Center emerald accent pulse */
+.app-shell::after {
+  content: '';
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  width: 35vw;
+  height: 35vw;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: meshPulse 12s ease-in-out infinite;
+  filter: blur(90px);
+}
+
+@keyframes meshFloat1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(8vw, 6vh) scale(1.15); }
+}
+
+@keyframes meshFloat2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-6vw, 8vh) scale(1.1); }
+}
+
+@keyframes meshFloat3 {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(5vw, -5vh) scale(1.2); }
+}
+
+@keyframes meshPulse {
+  0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.8; transform: translate(-50%, -50%) scale(1.3); }
+}
+
+/* ─── Accessibility Focus Rings ─── */
 :focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 3px;
   border-radius: var(--radius-sm);
 }
 
-/* Typography Hierarchy */
+/* ─── Typography Hierarchy ─── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 700;
@@ -59,18 +130,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: 2.25rem;
-  letter-spacing: -0.03em;
+  font-size: 2.35rem;
+  letter-spacing: -0.035em;
+  font-weight: 800;
 }
 
 h2 {
-  font-size: 1.65rem;
-  letter-spacing: -0.02em;
+  font-size: 1.7rem;
+  letter-spacing: -0.025em;
 }
 
 h3 {
-  font-size: 1.25rem;
-  letter-spacing: -0.01em;
+  font-size: 1.3rem;
+  letter-spacing: -0.015em;
+  font-weight: 600;
 }
 
 p {
@@ -86,13 +159,15 @@ a {
 
 a:hover {
   text-decoration: underline;
+  color: var(--accent-primary);
 }
 
-/* Gradient Text Utility */
+/* ─── Gradient Text Utilities ─── */
 .text-gradient {
   background: var(--grad-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   display: inline-block;
 }
 
@@ -100,29 +175,31 @@ a:hover {
   background: var(--grad-ai);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   display: inline-block;
 }
 
-/* Custom Scrollbars */
+/* ─── Premium Scrollbars ─── */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--bg-tertiary);
   border-radius: var(--radius-full);
+  border: 2px solid var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-primary);
 }
 
-/* Screen reader only utility for WCAG AA */
+/* ─── Screen reader only utility ─── */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -133,4 +210,10 @@ a:hover {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ─── Selection Highlight ─── */
+::selection {
+  background: rgba(139, 92, 246, 0.35);
+  color: var(--text-primary);
 }

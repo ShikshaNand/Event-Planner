@@ -1,20 +1,79 @@
 /**
- * Formatting Utilities for AuraPlan AI
+ * Formatting Utilities for PlanAura AI
+ * Multi-currency, internationalized date formatting, countdowns, and ID generation
  */
 
 /**
- * Format a number into currency
+ * Supported currencies with locale mappings for proper symbol placement
+ */
+export const SUPPORTED_CURRENCIES = [
+  { code: 'USD', name: 'US Dollar', symbol: '$', locale: 'en-US' },
+  { code: 'EUR', name: 'Euro', symbol: '€', locale: 'de-DE' },
+  { code: 'GBP', name: 'British Pound', symbol: '£', locale: 'en-GB' },
+  { code: 'INR', name: 'Indian Rupee', symbol: '₹', locale: 'en-IN' },
+  { code: 'JPY', name: 'Japanese Yen', symbol: '¥', locale: 'ja-JP' },
+  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', locale: 'en-AU' },
+  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', locale: 'en-CA' },
+  { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', locale: 'de-CH' },
+  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', locale: 'zh-CN' },
+  { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', locale: 'ar-AE' },
+  { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$', locale: 'en-SG' },
+  { code: 'MXN', name: 'Mexican Peso', symbol: 'MX$', locale: 'es-MX' },
+  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', locale: 'pt-BR' },
+  { code: 'KRW', name: 'South Korean Won', symbol: '₩', locale: 'ko-KR' },
+  { code: 'ZAR', name: 'South African Rand', symbol: 'R', locale: 'en-ZA' },
+  { code: 'SEK', name: 'Swedish Krona', symbol: 'kr', locale: 'sv-SE' },
+  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$', locale: 'en-NZ' },
+  { code: 'THB', name: 'Thai Baht', symbol: '฿', locale: 'th-TH' },
+  { code: 'TRY', name: 'Turkish Lira', symbol: '₺', locale: 'tr-TR' },
+  { code: 'RUB', name: 'Russian Ruble', symbol: '₽', locale: 'ru-RU' },
+  { code: 'PLN', name: 'Polish Zloty', symbol: 'zł', locale: 'pl-PL' },
+  { code: 'PHP', name: 'Philippine Peso', symbol: '₱', locale: 'en-PH' },
+  { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', locale: 'en-NG' },
+  { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£', locale: 'ar-EG' }
+];
+
+/**
+ * Lookup locale by currency code
+ * @param {string} currencyCode 
+ * @returns {string}
+ */
+function getLocaleForCurrency(currencyCode) {
+  const entry = SUPPORTED_CURRENCIES.find(c => c.code === currencyCode);
+  return entry ? entry.locale : 'en-US';
+}
+
+/**
+ * Format a number into localized currency string
  * @param {number|string} amount 
  * @param {string} [currency='USD']
  * @returns {string}
  */
 export function formatCurrency(amount, currency = 'USD') {
   const num = Number(amount) || 0;
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    maximumFractionDigits: 0
-  }).format(num);
+  const locale = getLocaleForCurrency(currency);
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+      maximumFractionDigits: 0
+    }).format(num);
+  } catch {
+    // Fallback for unusual currency codes
+    const entry = SUPPORTED_CURRENCIES.find(c => c.code === currency);
+    const symbol = entry ? entry.symbol : currency;
+    return `${symbol}${num.toLocaleString()}`;
+  }
+}
+
+/**
+ * Get currency symbol for a given code
+ * @param {string} currencyCode 
+ * @returns {string}
+ */
+export function getCurrencySymbol(currencyCode) {
+  const entry = SUPPORTED_CURRENCIES.find(c => c.code === currencyCode);
+  return entry ? entry.symbol : currencyCode;
 }
 
 /**

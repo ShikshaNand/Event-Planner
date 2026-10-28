@@ -5,7 +5,7 @@
 import { formatCurrency, formatDate, getDaysRemaining, formatPercentage } from '../utils/formatters.js';
 import { escapeHTML } from '../utils/sanitizer.js';
 
-export function renderDashboardView(event, store, aiService, navigateTo) {
+export function renderDashboardView(event, store, aiService, navigateTo, onEditEvent) {
   const container = document.createElement('div');
   container.className = 'animate-fade-in';
 
@@ -43,18 +43,21 @@ export function renderDashboardView(event, store, aiService, navigateTo) {
         <div class="stat-subtext" style="display: flex; justify-content: space-between; margin-top: 0.25rem;">
           <span>Budget: ${formatCurrency(budgetSummary.totalBudget, event.currency)}</span>
           <span style="font-weight: 700; color: ${budgetSummary.isOverBudget ? 'var(--accent-rose)' : 'var(--text-secondary)'};">
-            ${budgetSummary.isOverBudget ? 'Over by ' + formatCurrency(Math.abs(budgetSummary.variance)) : formatCurrency(budgetSummary.remainingBudget) + ' left'}
+            ${budgetSummary.isOverBudget ? 'Over by ' + formatCurrency(Math.abs(budgetSummary.variance), event.currency) : formatCurrency(budgetSummary.remainingBudget, event.currency) + ' left'}
           </span>
         </div>
       </div>
 
-      <div class="glass-card stat-card">
+      <div class="glass-card stat-card" id="dashboard-countdown-card" style="cursor: pointer; transition: transform var(--transition-fast);" title="Click to change event date & countdown">
         <div class="stat-header">
           <span class="stat-label">Countdown</span>
-          <span class="stat-icon">⏳</span>
+          <span class="stat-icon" title="Edit Date">📅 ⏳</span>
         </div>
         <div class="stat-value" style="color: var(--accent-cyan);">${countdown.label}</div>
-        <div class="stat-subtext">${formatDate(event.date)} at ${escapeHTML(event.time || '18:00')}</div>
+        <div class="stat-subtext" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>${formatDate(event.date)} at ${escapeHTML(event.time || '18:00')}</span>
+          <span style="font-size: 0.72rem; color: var(--accent-primary); font-weight: 700; text-decoration: underline;">Change Date</span>
+        </div>
       </div>
 
       <div class="glass-card stat-card">
@@ -135,7 +138,7 @@ export function renderDashboardView(event, store, aiService, navigateTo) {
             Contingency Buffer Recommendation
           </div>
           <div style="font-size: 0.8rem; color: var(--text-secondary);">
-            Allocated: <strong style="color: var(--accent-emerald);">${formatCurrency(event.budgetItems?.find(b => b.category.includes('Contingency'))?.estimatedCost || 0)}</strong>
+            Allocated: <strong style="color: var(--accent-emerald);">${formatCurrency(event.budgetItems?.find(b => b.category.includes('Contingency'))?.estimatedCost || 0, event.currency)}</strong>
             (${Math.round(((event.budgetItems?.find(b => b.category.includes('Contingency'))?.estimatedCost || 0) / (event.totalBudget || 1)) * 100)}% of total budget)
           </div>
         </div>
@@ -181,6 +184,9 @@ export function renderDashboardView(event, store, aiService, navigateTo) {
   container.querySelector('.view-budget-cta')?.addEventListener('click', () => navigateTo('budget'));
   container.querySelector('.open-crisis-cta')?.addEventListener('click', () => navigateTo('crisis'));
   container.querySelector('.view-timeline-cta')?.addEventListener('click', () => navigateTo('timeline'));
+  container.querySelector('#dashboard-countdown-card')?.addEventListener('click', () => {
+    if (onEditEvent) onEditEvent();
+  });
 
   return container;
 }

@@ -1,48 +1,41 @@
 /**
- * Gemini REST Client
- * Communicates with Google Generative Language API securely
- * Supports timeout, model fallback, error handling, and JSON response mode
+ * Gemini REST Client — Production Integration
+ * Uses X-goog-api-key header authentication with gemini-3.8-flash model
+ * Supports timeout, retry with exponential backoff, model fallback chain,
+ * error handling, and JSON response mode
  */
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
+/** Ordered fallback chain — gemini-flash-lite-latest has active quota, followed by flash-latest */
+const MODEL_FALLBACK_CHAIN = [
+  'gemini-flash-lite-latest',
+  'gemini-flash-latest',
+  'gemini-3-flash-preview',
+  'gemini-3.1-flash-lite',
+  'gemini-3.8-flash'
+];
+
+const MAX_RETRIES = 2;
+const BASE_DELAY_MS = 800;
+
 /**
- * Call Gemini Flash with structured prompt
- * @param {string} apiKey 
- * @param {string} prompt 
- * @param {object} [options]
- * @returns {Promise<string>}
+ * Single attempt to call a specific Gemini model
+ * @private
  */
-export async function callGemini(apiKey, prompt, options = {}) {
-  if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
-    throw new Error('Gemini API key is required to call external GenAI.');
-  }
-
-  const model = options.model || 'gemini-1.5-flash';
-  const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${encodeURIComponent(apiKey.trim())}`;
-
-  const requestBody = {
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: prompt }]
-      }
-    ],
-    generationConfig: {
-      temperature: options.temperature !== undefined ? options.temperature : 0.7,
-      maxOutputTokens: options.maxTokens || 2048,
-      responseMimeType: options.jsonMode ? 'application/json' : 'text/plain'
-    }
-  };
-
+async function _callModel(apiKey, model, requestBody, timeoutMs) {
+  const cleanKey = apiKey.trim();
+  // Support both URL param and X-goog-api-key header for maximum browser/network compatibility
+  const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), options.timeoutMs || 25000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-goog-api-key': cleanKey
       },
       body: JSON.stringify(requestBody),
       signal: controller.signal
@@ -52,15 +45,16 @@ export async function callGemini(apiKey, prompt, options = {}) {
 
     if (!response.ok) {
       let errorMsg = `Gemini API returned status ${response.status}`;
+      let statusCode = response.status;
       try {
         const errorData = await response.json();
-        if (errorData.error && errorData.error.message) {
+        if (errorData.error?.message) {
           errorMsg = errorData.error.message;
         }
-      } catch {
-        // use default error message
-      }
-      throw new Error(errorMsg);
+      } catch { /* use default */ }
+      const err = new Error(errorMsg);
+      err.statusCode = statusCode;
+      throw err;
     }
 
     const data = await response.json();
@@ -75,8 +69,71 @@ export async function callGemini(apiKey, prompt, options = {}) {
   } catch (err) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      throw new Error('Request to Gemini API timed out after 25 seconds.');
+      const e = new Error(`Request to Gemini model ${model} timed out.`);
+      e.statusCode = 408;
+      throw e;
     }
     throw err;
   }
+}
+
+/**
+ * Call Google Gemini with structured prompt via header-based auth.
+ * Automatically retries on 503 (overloaded) with exponential backoff
+ * and falls back through the model chain on 404 (deprecated model).
+ *
+ * @param {string} apiKey 
+ * @param {string} prompt 
+ * @param {object} [options]
+ * @returns {Promise<string>}
+ */
+export async function callGemini(apiKey, prompt, options = {}) {
+  if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+    throw new Error('Gemini API key is required to call external GenAI.');
+  }
+
+  const requestBody = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: options.temperature !== undefined ? options.temperature : 0.7,
+      maxOutputTokens: options.maxTokens || 4096,
+      responseMimeType: options.jsonMode ? 'application/json' : 'text/plain'
+    }
+  };
+
+  const timeoutMs = options.timeoutMs || 45000;
+
+  // Build model list: user-specified model first, then fallback chain
+  const models = options.model
+    ? [options.model, ...MODEL_FALLBACK_CHAIN.filter(m => m !== options.model)]
+    : [...MODEL_FALLBACK_CHAIN];
+
+  let lastError = null;
+
+  for (const model of models) {
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        return await _callModel(apiKey, model, requestBody, timeoutMs);
+      } catch (err) {
+        lastError = err;
+        // 404 = model not found / deprecated → skip to next model immediately
+        if (err.statusCode === 404) break;
+        // 429 Quota exhausted for this model → skip to next model in fallback chain immediately
+        if (err.statusCode === 429 && (err.message?.toLowerCase().includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED'))) {
+          console.warn(`[GeminiClient] Model ${model} daily free quota exceeded. Falling over to next model in chain...`);
+          break;
+        }
+        // 503 / transient 429 rate limit → retry with exponential backoff
+        if (err.statusCode === 503 || err.statusCode === 429) {
+          const delay = BASE_DELAY_MS * Math.pow(2, attempt) + Math.random() * 500;
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        // Any other error (e.g. invalid key 400/403) → throw immediately
+        throw err;
+      }
+    }
+  }
+
+  throw lastError || new Error('All Gemini models failed. Please try again later.');
 }

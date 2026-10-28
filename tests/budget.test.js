@@ -65,4 +65,16 @@ test('Budget Calculations and Summaries', async (t) => {
     summary = eventStore.getBudgetSummary(testEvt.id);
     assert.equal(summary.totalActual, 0);
   });
+
+  await t.test('deletes event and keeps store in valid state', () => {
+    const testEvt = eventStore.addEvent({
+      title: 'Temporary Event',
+      type: 'community',
+      totalBudget: 5000
+    });
+    assert.ok(eventStore.getEvents().some(e => e.id === testEvt.id));
+    eventStore.deleteEvent(testEvt.id);
+    assert.equal(eventStore.getEvents().some(e => e.id === testEvt.id), false);
+    assert.ok(eventStore.getEvents().length >= 1, 'Store must always retain at least one valid event');
+  });
 });

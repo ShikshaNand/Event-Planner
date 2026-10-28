@@ -2,7 +2,7 @@
  * Comprehensive Budget & Financial Ledger View
  */
 
-import { formatCurrency } from '../utils/formatters.js';
+import { formatCurrency, getCurrencySymbol } from '../utils/formatters.js';
 import { escapeHTML } from '../utils/sanitizer.js';
 import { validateBudgetItem } from '../utils/validators.js';
 import { openModal, closeModal } from '../components/modal.js';

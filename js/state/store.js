@@ -7,17 +7,32 @@ import { INITIAL_EVENTS } from './initialData.js';
 import { safeJSONParse } from '../utils/sanitizer.js';
 import { generateId } from '../utils/formatters.js';
 
-const STORAGE_KEY = 'auraplan_events_v1';
+const STORAGE_KEY = 'auraplan_events_v2';
 const API_KEY_SESSION_KEY = 'auraplan_gemini_api_key';
+const DEFAULT_API_KEY = '';
 
 class EventStore {
   constructor() {
     this.listeners = new Set();
     this.events = this.loadFromStorage();
     this.currentEventId = this.events[0]?.id || null;
-    this.apiKey = typeof window !== 'undefined' && window.sessionStorage
-      ? window.sessionStorage.getItem(API_KEY_SESSION_KEY) || ''
-      : '';
+
+    // Load API key from local or session storage, or default to configured key
+    if (typeof window !== 'undefined') {
+      const stored = window.localStorage?.getItem(API_KEY_SESSION_KEY) ||
+                     window.sessionStorage?.getItem(API_KEY_SESSION_KEY);
+      if (stored) {
+        this.apiKey = stored;
+      } else {
+        this.apiKey = DEFAULT_API_KEY;
+        try {
+          window.localStorage?.setItem(API_KEY_SESSION_KEY, DEFAULT_API_KEY);
+          window.sessionStorage?.setItem(API_KEY_SESSION_KEY, DEFAULT_API_KEY);
+        } catch { /* ignore storage errors */ }
+      }
+    } else {
+      this.apiKey = DEFAULT_API_KEY;
+    }
   }
 
   loadFromStorage() {
@@ -58,12 +73,16 @@ class EventStore {
 
   setApiKey(key) {
     this.apiKey = (key || '').trim();
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      if (this.apiKey) {
-        window.sessionStorage.setItem(API_KEY_SESSION_KEY, this.apiKey);
-      } else {
-        window.sessionStorage.removeItem(API_KEY_SESSION_KEY);
-      }
+    if (typeof window !== 'undefined') {
+      try {
+        if (this.apiKey) {
+          window.localStorage?.setItem(API_KEY_SESSION_KEY, this.apiKey);
+          window.sessionStorage?.setItem(API_KEY_SESSION_KEY, this.apiKey);
+        } else {
+          window.localStorage?.removeItem(API_KEY_SESSION_KEY);
+          window.sessionStorage?.removeItem(API_KEY_SESSION_KEY);
+        }
+      } catch { /* ignore storage errors */ }
     }
     this.notify('apiKeyUpdate', { hasKey: Boolean(this.apiKey) });
   }
@@ -128,11 +147,30 @@ class EventStore {
   }
 
   deleteEvent(eventId) {
-    if (this.events.length <= 1) {
-      throw new Error('You must keep at least one event in your planner.');
-    }
     this.events = this.events.filter(e => e.id !== eventId);
-    if (this.currentEventId === eventId) {
+    if (this.events.length === 0) {
+      // Create a clean new event template so planner stays functional
+      const freshEvent = {
+        id: generateId('evt'),
+        title: 'New Gathering',
+        type: 'wedding',
+        date: new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0],
+        time: '18:00',
+        location: 'Venue Location TBD',
+        guestCount: 50,
+        totalBudget: 10000,
+        currency: 'USD',
+        vibe: 'Warm, memorable and curated with purpose',
+        colorPalette: ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ec4899'],
+        budgetItems: [],
+        timeline: [],
+        vendors: [],
+        ideas: [],
+        accessibilityNeeds: []
+      };
+      this.events.push(freshEvent);
+    }
+    if (this.currentEventId === eventId || !this.events.some(e => e.id === this.currentEventId)) {
       this.currentEventId = this.events[0]?.id || null;
     }
     this.notify('eventDeleted', { eventId });

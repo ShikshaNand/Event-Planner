@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlanAura AI - GenAI Event Operating System for Weddings, Birthdays & Community Events</title>
+  
+  <meta name="description" content="Professional GenAI-powered planning assistant for organizing weddings, milestone birthdays, and community festivals with dynamic budgets, run-of-show timelines, vendor checklists, and instant emergency crisis problem solving." />
+  <meta name="keywords" content="event planning, wedding planner, birthday organizer, community festival, run of show timeline, event budget calculator, vendor management, crisis resolution, GenAI event assistant" />
+  <meta name="author" content="PlanAura AI Systems" />
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="PlanAura AI - GenAI Event Operating System" />
+  <meta property="og:description" content="Organize weddings, birthdays, and community events with AI budgets, run-of-show timelines, vendor checklists, and crisis problem solving." />
+  <meta property="og:type" content="website" />
+
+  <!-- Security: Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://generativelanguage.googleapis.com; img-src 'self' data: blob:;" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Sticky Global Navigation Header -->
+    <header class="top-header" role="banner">
+      <div class="brand-section">
+        <div class="brand-logo-icon" aria-hidden="true">✨</div>
+        <div class="brand-text-container">
+          <span class="brand-title">Plan<span class="text-gradient">Aura</span> AI</span>
+          <span class="brand-tagline">Event Operating System</span>
+        </div>
+      </div>
+
+      <!-- Center Event Selector Dropdown -->
+      <div class="event-selector-bar" role="region" aria-label="Event Switcher">
+        <label for="global-event-select" class="sr-only">Choose Event</label>
+        <span style="font-size: 0.85rem; color: var(--text-tertiary);">📅</span>
+        <select id="global-event-select" class="event-select-dropdown" aria-label="Select active event plan"></select>
+        <button class="btn btn-outline btn-sm" id="new-event-btn" title="Create or Generate New Event Plan" style="border-radius: var(--radius-full); padding: 0.2rem 0.65rem;">
+          + New Plan
+        </button>
+        <button class="btn btn-outline btn-sm" id="delete-event-header-btn" title="Delete Active Event Plan" style="border-radius: var(--radius-full); padding: 0.2rem 0.65rem; color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4);">
+          🗑️ Delete
+        </button>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="top-actions">
+        <div class="currency-selector-wrapper" style="display: flex; align-items: center; gap: 0.35rem;" title="Change Event Currency">
+          <label for="global-currency-select" class="sr-only">Currency</label>
+          <span style="font-size: 0.85rem;">💱</span>
+          <select id="global-currency-select" class="form-select" style="padding: 0.2rem 0.5rem; font-size: 0.82rem; height: 32px; background: var(--bg-tertiary); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: var(--radius-sm); cursor: pointer;" aria-label="Select currency">
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="INR">INR (₹)</option>
+            <option value="JPY">JPY (¥)</option>
+            <option value="CAD">CAD ($)</option>
+            <option value="AUD">AUD ($)</option>
+            <option value="AED">AED (AED)</option>
+          </select>
+        </div>
+        <button class="btn btn-ai btn-sm pulse-glow" id="open-ai-drawer-btn" aria-label="Open PlanAura AI Copilot">
+          <span>✨</span>
+          <span>AI Assistant</span>
+        </button>
+        <button class="btn btn-outline btn-icon" id="print-dossier-btn" title="Print or Export PDF Dossier" aria-label="Print event dossier">
+          🖨️
+        </button>
+        <button class="btn btn-outline btn-icon" id="theme-toggle-btn" title="Toggle Light / Dark Mode" aria-label="Toggle theme">
+          ☀️
+        </button>
+      </div>
+    </header>
+
+    <!-- Dynamic Event Hero Banner -->
+    <section class="event-hero" id="event-hero-section" aria-label="Active Event Overview">
+      <!-- Populated dynamically by app.js -->
+    </section>
+
+    <!-- Main Navigation Tab Bar -->
+    <nav class="nav-tabs-wrapper" role="navigation" aria-label="Event Sections">
+      <ul class="nav-tabs-list" role="tablist">
+        <li role="presentation">
+          <button class="tab-btn active" id="tab-dashboard" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="main-content-view">
+            <span>📊</span> Overview & Scorecard
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="tab-btn" id="tab-budget" data-tab="budget" role="tab" aria-selected="false" aria-controls="main-content-view">
+            <span>💳</span> Budget & Financial Ledger
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="tab-btn" id="tab-timeline" data-tab="timeline" role="tab" aria-selected="false" aria-controls="main-content-view">
+            <span>⏱</span> Run-of-Show Timeline
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="tab-btn" id="tab-vendors" data-tab="vendors" role="tab" aria-selected="false" aria-controls="main-content-view">
+            <span>🤝</span> Vendors & RFP Checklist
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="tab-btn" id="tab-ideas" data-tab="ideas" role="tab" aria-selected="false" aria-controls="main-content-view">
+            <span>🎨</span> Creative Ideas Lab
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="tab-btn tab-crisis" id="tab-crisis" data-tab="crisis" role="tab" aria-selected="false" aria-controls="main-content-view">
+            <span>🚨</span> Crisis & Problem Solver
+          </button>
+        </li>
+        <li role="presentation">
+          <button class="tab-btn" id="tab-accessibility" data-tab="accessibility" role="tab" aria-selected="false" aria-controls="main-content-view">
+            <span>♿</span> Guest Care & Inclusion
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Dynamic Main Content View -->
+    <main class="main-content" id="main-content-view" role="main" tabindex="-1">
+      <!-- Populated dynamically based on active tab -->
+    </main>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 2rem; border-top: 1px solid var(--border-subtle); color: var(--text-tertiary); font-size: 0.8rem;">
+      <p>PlanAura AI • Intelligent Event Planning Operating System • Engineered for Precision, Resilience & Inclusion</p>
+    </footer>
+  </div>
+
+  <!-- Main ES Module Script -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

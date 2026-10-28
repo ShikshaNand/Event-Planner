@@ -184,6 +184,88 @@ Respond in STRICT JSON format:
     return this.generateHeuristicIdeas(params);
   }
 
+  /**
+   * Conversational Copilot Assistant
+   * @param {string} question
+   * @param {object} [eventContext]
+   * @returns {Promise<string>}
+   */
+  async askCopilot(question, eventContext = null) {
+    const apiKey = this.store.getApiKey();
+
+    if (apiKey) {
+      try {
+        let systemPrompt = `You are PlanAura Copilot, an elite, warm, highly practical GenAI event planner.
+Provide direct, inspiring, actionable advice. Use markdown bullet points and short punchy paragraphs.
+Never be vague. Provide actual examples, timeline numbers, or creative specifics.`;
+
+        if (eventContext) {
+          systemPrompt += `\nActive Event Context:
+- Event: "${eventContext.title}" (${eventContext.type})
+- Date: ${eventContext.date || 'Upcoming'}
+- Expected Guests: ${eventContext.guestCount || 80}
+- Total Budget: ${eventContext.currency || '$'}${eventContext.totalBudget || 15000}
+- Aesthetic Vibe: "${eventContext.vibe || 'Curated & Memorable'}"
+- Location: ${eventContext.location || 'TBD'}`;
+        }
+
+        const prompt = `${systemPrompt}\n\nUser Question: ${question}\n\nAnswer:`;
+        const raw = await callGemini(apiKey, prompt, { jsonMode: false, temperature: 0.7 });
+        if (raw && raw.trim().length > 0) {
+          return raw.trim();
+        }
+      } catch (err) {
+        console.warn('Gemini Copilot chat error, using heuristic fallback:', err);
+      }
+    }
+
+    return this.generateHeuristicChatAnswer(question, eventContext);
+  }
+
+  /**
+   * GenAI Accessibility & Well-Being Audit
+   * @param {object} event
+   * @returns {Promise<object>}
+   */
+  async auditAccessibility(event) {
+    const apiKey = this.store.getApiKey();
+
+    if (apiKey) {
+      try {
+        const prompt = `You are an elite Accessibility, Diversity & Guest Care Director for live events.
+Conduct an exhaustive accessibility and inclusion audit for this event:
+- Title: "${event.title}"
+- Type: ${event.type}
+- Guest Count: ${event.guestCount}
+- Location: ${event.location || 'Indoor / Outdoor Venue'}
+- Vibe: "${event.vibe || ''}"
+
+Provide an authoritative compliance and hospitality audit in STRICT JSON format:
+{
+  "score": 96,
+  "summary": "One sentence evaluation of accessibility readiness",
+  "pillars": [
+    { "title": "Physical Mobility & ADA", "recommendations": ["Recommendation 1", "Recommendation 2"] },
+    { "title": "Dietary & Allergen Safeguards", "recommendations": ["Recommendation 1", "Recommendation 2"] },
+    { "title": "Sensory & Neurodivergent Comfort", "recommendations": ["Recommendation 1", "Recommendation 2"] },
+    { "title": "Emergency Evacuation & Safety", "recommendations": ["Recommendation 1", "Recommendation 2"] }
+  ],
+  "proactiveActionItem": { "title": "Suggested requirement to add", "notes": "Operational notes for staff" }
+}`;
+
+        const raw = await callGemini(apiKey, prompt, { jsonMode: true, temperature: 0.4 });
+        const parsed = safeJSONParse(raw, null);
+        if (parsed && Array.isArray(parsed.pillars)) {
+          return parsed;
+        }
+      } catch (err) {
+        console.warn('Gemini Accessibility audit failed, using heuristic fallback:', err);
+      }
+    }
+
+    return this.generateHeuristicAccessibilityAudit(event);
+  }
+
   // ==========================================
   // EXPERT HEURISTIC ENGINE (100% OFFLINE / RESILIENT)
   // ==========================================
@@ -576,6 +658,72 @@ Respond in STRICT JSON format:
         status: 'in-progress',
         notes: a.notes || ''
       }))
+    };
+  }
+
+  generateHeuristicChatAnswer(question, eventContext) {
+    const q = (question || '').toLowerCase();
+    const eventType = eventContext?.type || 'event';
+    const title = eventContext?.title || 'your gathering';
+
+    if (q.includes('timeline') || q.includes('schedule') || q.includes('hour')) {
+      return `### Recommended Flow of Events for ${eventContext?.title || 'Your Event'}\n\nHere is an optimized, crowd-pleasing run-of-show:\n\n- **T-0:00 (Arrival & Preludes):** Welcome station open, signature drinks or infused mocktails served, ambient background music at 65dB.\n- **T+0:45 (Main Feature / Ceremony):** Transition guests to focal seating. Program kicks off with focused attention.\n- **T+1:30 (Dinner / Food & Socializing):** Food stations or plated service begins. Keeps lines moving within 20 minutes.\n- **T+2:30 (Celebrations & Toasts):** Spotlight remarks and interactive program moments.\n- **T+3:00 to Finish (Dancing & High Energy):** Floor open with dynamic party transitions.`;
+    }
+
+    if (q.includes('cocktail') || q.includes('drink') || q.includes('food') || q.includes('menu')) {
+      return `### Curated Food & Beverage Concepts for ${title}\n\nHere are 3 distinct, high-impact options:\n\n1. **The Signature Dual Concept:** Pair an elevated cocktail (e.g. Lavender Botanical Gin & Tonic) with an artisanal zero-proof mocktail (Blood Orange Sparkling Rosemary Smash) so all guests feel equally celebrated.\n2. **Passed Petite Pairings:** Miniature gourmet street bites (truffle sliders, ahi tuna crisps) paired with mini craft beer or cider samplers.\n3. **Late-Night Snack Surprise:** 45 minutes before departure, roll out fresh warm churros with spiced chocolate or artisan wood-fired flatbreads.`;
+    }
+
+    if (q.includes('budget') || q.includes('cost') || q.includes('save') || q.includes('money')) {
+      return `### Tactical Budget Optimization for ${title}\n\n- **Target 10% Emergency Contingency:** Ensure you protect a dedicated rainy-day fund so unexpected vendor overtime doesn't derail finances.\n- **Vendor Bundle Negotiation:** Ask your photo/video or DJ/lighting vendors for combined single-contract bundling for 10-15% discount.\n- **Repurposing Florals & Decor:** Move ceremony arches or focal installations to behind the dessert table or sweetheart table during the reception transition.`;
+    }
+
+    return `### Strategic Event Planning Recommendation\n\nFor **${title}** (${eventType}), here are the essential action items:\n\n- **Guest Comfort Priority:** Keep high-traffic walkways at least 36-48 inches wide, provide clear hydration stations, and ensure seating is available for at least 85% of guests.\n- **Vendor Alignment:** Confirm vendor insurance (COI) and load-in timing 14 days before the event.\n- **Audio-Visual Balance:** Test microphones and acoustics 90 minutes before doors open, and maintain designated quiet conversational zones away from main speakers.`;
+  }
+
+  generateHeuristicAccessibilityAudit(event) {
+    const type = event?.type || 'wedding';
+    const count = event?.guestCount || 80;
+
+    return {
+      score: 95,
+      summary: `High accessibility readiness for ${event?.title || 'your event'}. Physical paths, allergen controls, and quiet zones are well-mapped.`,
+      pillars: [
+        {
+          title: 'Physical Mobility & ADA Circulation',
+          recommendations: [
+            'Maintain at least 36-inch clear pathways between all dining tables and outdoor transitions.',
+            'Ensure all steps or elevation changes have ramps with maximum 1:12 slope and sturdy dual handrails.',
+            'Reserve dedicated front-row seating zones with clear sightlines for wheelchair users and companions.'
+          ]
+        },
+        {
+          title: 'Dietary & Severe Allergen Protection',
+          recommendations: [
+            'Demand strict cross-contamination segregation in the catering prep area for peanut, tree nut, and celiac safety.',
+            'Label all buffet food items clearly with prominent FDA Top-9 allergen identification tags.',
+            'Ensure banquet captain personally checks in with guests who RSVP’d with life-threatening allergies.'
+          ]
+        },
+        {
+          title: 'Sensory & Neurodivergent Inclusion',
+          recommendations: [
+            'Designate a low-stimulation quiet room away from loud subwoofers with dim warm lighting and seating.',
+            'Avoid sudden strobe effects or haze without advance announcements for photosensitive attendees.'
+          ]
+        },
+        {
+          title: 'Emergency Evacuation & First Aid',
+          recommendations: [
+            `For ${count} guests, ensure primary and secondary emergency exits are fully unlocked and well-illuminated.`,
+            'Ensure lead venue coordinator has a fully stocked first aid kit and accessible AED defibrillator on site.'
+          ]
+        }
+      ],
+      proactiveActionItem: {
+        title: 'Sensory Comfort & Dimmable Quiet Zone',
+        notes: 'Designate a clearly marked quiet space stocked with water and soft seating away from main dance floor.'
+      }
     };
   }
 }
