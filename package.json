@@ -1,0 +1,23 @@
+{
+  "name": "auraplan-genai-event-planner",
+  "version": "1.0.0",
+  "description": "Professional GenAI-Powered Event Planning Operating System for Weddings, Birthdays, and Community Events with Budgets, Timelines, Vendor Checklists, and Emergency Crisis Problem Solving",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "keywords": [
+    "event-planner",
+    "genai",
+    "budget-management",
+    "timeline-run-of-show",
+    "vendor-management",
+    "crisis-problem-solving",
+    "accessibility"
+  ],
+  "author": "Antigravity Engineering",
+  "license": "MIT"
+}
