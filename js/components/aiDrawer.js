@@ -121,8 +121,8 @@ export function initAIDrawer(store, aiService, onEventAdded) {
       </div>
 
       <!-- Chat Tab -->
-      <div id="drawer-tab-chat" class="drawer-tab-content" style="display: none; height: 100%; flex-direction: column;">
-        <div id="copilot-chat-history" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; min-height: 280px; max-height: 420px; padding: 0.5rem 0;">
+      <div id="drawer-tab-chat" class="drawer-tab-content" style="display: none; height: 100%; flex: 1; flex-direction: column; min-height: 0;">
+        <div id="copilot-chat-history" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding: 0.5rem 0.25rem 0.75rem 0;">
           <div style="background: var(--bg-tertiary); padding: 0.85rem; border-radius: var(--radius-md); font-size: 0.85rem; border-left: 3px solid var(--accent-primary);">
             <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem;">✨ PlanAura Live GenAI Copilot</div>
             <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Ask any logistical question, request custom schedules, menu ideas, or vendor negotiation scripts:</p>
@@ -135,7 +135,7 @@ export function initAIDrawer(store, aiService, onEventAdded) {
           </div>
         </div>
 
-        <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+        <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border-subtle); display: flex; gap: 0.5rem; background: var(--bg-secondary); position: sticky; bottom: 0; z-index: 5;">
           <input type="text" id="copilot-query-input" class="form-input" placeholder="Ask your planning question..." />
           <button class="btn btn-ai btn-sm" id="copilot-query-send">Send</button>
         </div>
@@ -225,7 +225,14 @@ export function initAIDrawer(store, aiService, onEventAdded) {
       btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
     });
     drawer.querySelectorAll('.drawer-tab-content').forEach(content => {
-      content.style.display = content.id === `drawer-tab-${tab}` ? 'flex' : 'none';
+      const isActive = content.id === `drawer-tab-${tab}`;
+      content.style.display = isActive ? 'flex' : 'none';
+      if (isActive) {
+        content.style.flexDirection = 'column';
+        content.style.flex = '1';
+        content.style.minHeight = '0';
+        content.style.height = '100%';
+      }
     });
   }
 
