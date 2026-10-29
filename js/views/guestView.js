@@ -1,11 +1,19 @@
 /**
  * Guest Well-Being, Accessibility & Inclusion Hub
+ * Manages physical mobility access, severe dietary allergen tracking, sensory zoning, and AI accessibility audits
  */
 
 import { escapeHTML } from '../utils/sanitizer.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 
+/**
+ * Renders the Guest Inclusion and Accessibility Hub view
+ * @param {import('../state/store.js').Event|null} event - Active event plan
+ * @param {import('../state/store.js').EventStore} store - Central event store
+ * @param {import('../services/aiService.js').AIService} aiService - GenAI service
+ * @returns {HTMLElement} Container DOM element with accessibility matrix
+ */
 export function renderGuestView(event, store, aiService) {
   const container = document.createElement('div');
   container.className = 'animate-fade-in';

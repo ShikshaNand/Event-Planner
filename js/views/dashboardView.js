@@ -1,10 +1,20 @@
 /**
  * Dashboard Overview View
+ * Summarizes critical KPI widgets: countdown ticker, budget utilization, milestone velocity, and vendor counts
  */
 
 import { formatCurrency, formatDate, getDaysRemaining, formatPercentage } from '../utils/formatters.js';
 import { escapeHTML } from '../utils/sanitizer.js';
 
+/**
+ * Renders the high-level Executive Dashboard
+ * @param {import('../state/store.js').Event|null} event - Active event plan
+ * @param {import('../state/store.js').EventStore} store - Central store
+ * @param {import('../services/aiService.js').AIService} aiService - GenAI service
+ * @param {(tab: string) => void} navigateTo - Router navigation function
+ * @param {(() => void)} [onEditEvent] - Callback to trigger event edit modal
+ * @returns {HTMLElement} Dashboard view DOM element
+ */
 export function renderDashboardView(event, store, aiService, navigateTo, onEditEvent) {
   const container = document.createElement('div');
   container.className = 'animate-fade-in';

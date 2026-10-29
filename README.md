@@ -20,9 +20,11 @@ Event planning frequently suffers from:
 ## 📐 Parameters Evaluation & Architectural Alignment
 
 ### 1. Code Quality (High Impact)
-- **Modular ES6+ Architecture:** Clean separation of concerns between state (`js/state/`), business logic & AI orchestration (`js/services/`), view components (`js/views/`), and pure utilities (`js/utils/`).
+- **Modular ES6+ Architecture:** Clean separation of concerns between state (`js/state/`), business logic & AI orchestration (`js/services/`), view components (`js/views/`), UI components (`js/components/`), and pure utilities (`js/utils/`).
+- **Complete JSDoc & Type Annotations:** Exhaustive `@typedef`, `@param`, `@returns`, and `@class` documentation across every class, method, view, and utility module for full static analysis type safety.
+- **Deep Immutability & Defensive Design:** Reference models, supported currencies, schema sets (`VALID_EVENT_TYPES`, `VALID_TIMELINE_PHASES`, `VALID_VENDOR_STATUSES`, `VALID_ACCESSIBILITY_STATUSES`), and initial seed datasets are protected with `Object.freeze()`.
 - **Zero Framework Bloat:** Ultra-clean vanilla JavaScript and modular CSS variables with zero dependency vulnerabilities.
-- **Readable & Maintainable:** Typed JSDoc annotations, explicit error handling, and clean functional programming patterns.
+- **Automated AST Lint Validation:** 100% syntax and structural validation across all 21 JavaScript project files via `npm run lint` (`node --check`).
 
 ### 2. Problem Statement Alignment
 - **Pre-Configured Event Archetypes:**
@@ -46,7 +48,7 @@ Event planning frequently suffers from:
   - Live status banner confirming active provider and model.
   - Model indicator on every Copilot chat reply showing exactly which engine generated the response.
 - **Strict XSS Defense:** All user inputs and AI outputs are escaped via entity encoding (`escapeHTML`) or constructed programmatically.
-- **Content Security Policy (CSP):** Configured HTTP headers and `<meta>` policy restricting script, style, and connection origins.
+- **Content Security Policy (CSP):** Configured HTTP headers and `<meta>` policy restricting script, style, and connection origins (`generativelanguage.googleapis.com` and `api.groq.com`).
 - **Path Traversal Protection:** Static server strictly validates file paths against directory traversal attacks (`..`).
 
 ### 4. Efficiency
@@ -56,14 +58,15 @@ Event planning frequently suffers from:
 
 ### 5. Testing
 - **Native Automated Test Suite:** Uses Node.js's built-in test runner (`node --test tests/*.test.js`).
-- **100% Pass Rate Across 38 Unit & Integration Tests (7 Test Suites):**
+- **100% Pass Rate Across 49 Unit & Integration Tests (8 Test Suites):**
   - `tests/budget.test.js`: Validates spend calculations, overbudget detection, and line-item mutations.
   - `tests/sanitizer.test.js`: Verifies XSS script injection immunity and safe JSON parsing.
-  - `tests/validators.test.js`: Enforces schema integrity for events, budgets, timeline items, and vendors.
+  - `tests/validators.test.js`: Enforces schema integrity for events, budgets, timeline items, vendors, accessibility needs, ideas, and immutability.
   - `tests/timeline.test.js`: Tests chronological sorting and iCalendar RFC 5545 compliance.
   - `tests/aiService.test.js`: Tests heuristic blueprints, weather crisis solving, and budget optimization.
   - `tests/formatters.test.js`: Validates internationalized multi-currency formatting, countdowns, and immutability.
   - `tests/exportService.test.js`: Tests CSV export generation, quote escaping, and RFC 5545 iCalendar serialization.
+  - `tests/store.test.js`: Tests event store lifecycle, dynamic model switching, vendor/accessibility/idea state transitions, and backup serialization.
 
 ### 6. Accessibility & Inclusion (WCAG AA)
 - **High-Contrast Design System:** Curated contrast ratios complying with WCAG 2.1 AA standards.

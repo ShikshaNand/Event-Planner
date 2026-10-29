@@ -1,11 +1,19 @@
 /**
  * Creative Ideas & Personalization Lab View
+ * Generates custom experiential ideas, decor palettes, guest engagement moments, and keepsake concepts
  */
 
 import { escapeHTML } from '../utils/sanitizer.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 
+/**
+ * Renders the Creative Ideas & Personalization Lab view
+ * @param {import('../state/store.js').Event|null} event - Active event plan
+ * @param {import('../state/store.js').EventStore} store - Central event store
+ * @param {import('../services/aiService.js').AIService} aiService - GenAI service
+ * @returns {HTMLElement} Ideas lab container DOM element
+ */
 export function renderIdeasView(event, store, aiService) {
   const container = document.createElement('div');
   container.className = 'animate-fade-in';

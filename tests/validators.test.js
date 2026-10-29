@@ -1,6 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateEvent, validateBudgetItem, validateTimelineItem, validateVendor } from '../js/utils/validators.js';
+import {
+  validateEvent,
+  validateBudgetItem,
+  validateTimelineItem,
+  validateVendor,
+  validateAccessibilityNeed,
+  validateIdea,
+  VALID_EVENT_TYPES,
+  VALID_TIMELINE_PHASES,
+  VALID_VENDOR_STATUSES,
+  VALID_ACCESSIBILITY_STATUSES
+} from '../js/utils/validators.js';
 
 test('Data Integrity and Schema Validators', async (t) => {
   await t.test('validates valid and invalid events', () => {
@@ -71,5 +82,41 @@ test('Data Integrity and Schema Validators', async (t) => {
     });
     assert.equal(invalidEmail.isValid, false);
     assert.ok(invalidEmail.errors.some(e => e.includes('email format')));
+  });
+
+  await t.test('validates accessibility needs and inclusion records', () => {
+    const valid = validateAccessibilityNeed({
+      title: 'Wheelchair Ramp Entry',
+      status: 'confirmed'
+    });
+    assert.equal(valid.isValid, true);
+    assert.equal(valid.errors.length, 0);
+
+    const invalid = validateAccessibilityNeed({
+      title: '',
+      status: 'non_existent_status'
+    });
+    assert.equal(invalid.isValid, false);
+    assert.ok(invalid.errors.length >= 2);
+  });
+
+  await t.test('validates creative idea items', () => {
+    const valid = validateIdea({
+      title: 'Interactive S\'mores Bar',
+      category: 'Food'
+    });
+    assert.equal(valid.isValid, true);
+
+    const invalid = validateIdea({
+      title: ''
+    });
+    assert.equal(invalid.isValid, false);
+  });
+
+  await t.test('ensures validation schema constants are immutably frozen', () => {
+    assert.ok(Object.isFrozen(VALID_EVENT_TYPES));
+    assert.ok(Object.isFrozen(VALID_TIMELINE_PHASES));
+    assert.ok(Object.isFrozen(VALID_VENDOR_STATUSES));
+    assert.ok(Object.isFrozen(VALID_ACCESSIBILITY_STATUSES));
   });
 });

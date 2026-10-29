@@ -1,5 +1,6 @@
 /**
  * Comprehensive Budget & Financial Ledger View
+ * Provides visual analytics, progress bars, line item CRUD, CSV export, and AI optimization
  */
 
 import { formatCurrency, getCurrencySymbol } from '../utils/formatters.js';
@@ -9,6 +10,13 @@ import { openModal, closeModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 import { exportBudgetCSV } from '../services/exportService.js';
 
+/**
+ * Renders the primary Budget & Expense Tracker view
+ * @param {import('../state/store.js').Event|null} event - Currently active event
+ * @param {import('../state/store.js').EventStore} store - Central event store
+ * @param {import('../services/aiService.js').AIService} aiService - GenAI service
+ * @returns {HTMLElement} Container DOM element with interactive financial ledger
+ */
 export function renderBudgetView(event, store, aiService) {
   const container = document.createElement('div');
   container.className = 'animate-fade-in';
@@ -189,6 +197,11 @@ export function renderBudgetView(event, store, aiService) {
   return container;
 }
 
+/**
+ * Displays modal to add a new budget item
+ * @param {import('../state/store.js').Event} event 
+ * @param {import('../state/store.js').EventStore} store 
+ */
 function showAddExpenseModal(event, store) {
   const contentHtml = `
     <form id="add-expense-form">
@@ -287,6 +300,12 @@ function showAddExpenseModal(event, store) {
   });
 }
 
+/**
+ * Displays modal to edit an existing budget item
+ * @param {import('../state/store.js').Event} event 
+ * @param {import('../state/store.js').EventStore} store 
+ * @param {import('../state/store.js').BudgetItem} item 
+ */
 function showEditExpenseModal(event, store, item) {
   const contentHtml = `
     <form id="edit-expense-form">
@@ -361,6 +380,13 @@ function showEditExpenseModal(event, store, item) {
   });
 }
 
+/**
+ * Opens AI Smart Budget Optimizer modal with recommendations and negotiation levers
+ * @param {import('../state/store.js').Event} event 
+ * @param {import('../state/store.js').EventStore} store 
+ * @param {import('../services/aiService.js').AIService} aiService 
+ * @returns {Promise<void>}
+ */
 async function showAIBudgetOptimizerModal(event, store, aiService) {
   const summary = store.getBudgetSummary(event.id);
 

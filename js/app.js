@@ -1,5 +1,6 @@
 /**
- * Main Application Bootstrap & Router for PlanAura AI
+ * Main Application Bootstrap & Client Router for PlanAura AI
+ * Orchestrates event switching, interactive navigation tabs, global hero widgets, and reactive store binding
  */
 
 import { eventStore } from './state/store.js';
@@ -20,11 +21,23 @@ import { renderIdeasView } from './views/ideasView.js';
 import { renderCrisisView } from './views/crisisView.js';
 import { renderGuestView } from './views/guestView.js';
 
+/**
+ * Main Application Orchestrator Class
+ * @class
+ */
 class App {
+  /**
+   * Initializes application state, reactive bindings, and loads initial views
+   * @constructor
+   */
   constructor() {
+    /** @type {import('./state/store.js').EventStore} */
     this.store = eventStore;
+    /** @type {AIService} */
     this.aiService = new AIService(this.store);
+    /** @type {string} */
     this.activeTab = 'dashboard';
+    /** @type {string} */
     this.theme = localStorage.getItem('auraplan_theme') || 'dark';
 
     this.initTheme();
@@ -32,12 +45,16 @@ class App {
     this.bindEvents();
     this.render();
 
-    // Subscribe to store updates
-    this.store.subscribe((store, action) => {
+    // Subscribe to reactive store mutations
+    this.store.subscribe((_store, _action) => {
       this.render();
     });
   }
 
+  /**
+   * Applies the theme preference to the root document element and toggles button icons
+   * @returns {void}
+   */
   initTheme() {
     document.documentElement.setAttribute('data-theme', this.theme);
     const themeBtn = document.getElementById('theme-toggle-btn');
@@ -46,12 +63,22 @@ class App {
     }
   }
 
+  /**
+   * Toggles theme state between dark and light, persisting choice in localStorage
+   * @returns {void}
+   */
   toggleTheme() {
     this.theme = this.theme === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('auraplan_theme', this.theme);
+    try {
+      localStorage.setItem('auraplan_theme', this.theme);
+    } catch { /* ignore storage errors */ }
     this.initTheme();
   }
 
+  /**
+   * Instantiates and configures the AI Assistant Drawer component
+   * @returns {void}
+   */
   initDrawer() {
     this.drawer = initAIDrawer(this.store, this.aiService, (newEventId) => {
       this.store.setCurrentEvent(newEventId);
@@ -60,6 +87,10 @@ class App {
     });
   }
 
+  /**
+   * Attaches event listeners for global navigation, currency switching, and print triggers
+   * @returns {void}
+   */
   bindEvents() {
     // Theme toggle
     document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
@@ -68,18 +99,19 @@ class App {
 
     // AI Drawer trigger
     document.getElementById('open-ai-drawer-btn')?.addEventListener('click', () => {
-      this.drawer.open('blueprint');
+      this.drawer?.open('blueprint');
     });
 
     // Event Switcher dropdown
-    const eventSelect = document.getElementById('global-event-select');
+    const eventSelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('global-event-select'));
     eventSelect?.addEventListener('change', (e) => {
-      this.store.setCurrentEvent(e.target.value);
+      const target = /** @type {HTMLSelectElement} */ (e.target);
+      this.store.setCurrentEvent(target.value);
     });
 
     // "New Event" button in top nav
     document.getElementById('new-event-btn')?.addEventListener('click', () => {
-      this.drawer.open('blueprint');
+      this.drawer?.open('blueprint');
     });
 
     // "Delete Event" button in top nav
@@ -88,9 +120,10 @@ class App {
     });
 
     // Global Currency Select
-    const currencySelect = document.getElementById('global-currency-select');
+    const currencySelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('global-currency-select'));
     currencySelect?.addEventListener('change', (e) => {
-      const newCurrency = e.target.value;
+      const target = /** @type {HTMLSelectElement} */ (e.target);
+      const newCurrency = target.value;
       const current = this.store.getCurrentEvent();
       if (current) {
         this.store.updateEvent(current.id, { currency: newCurrency });
@@ -114,6 +147,10 @@ class App {
     });
   }
 
+  /**
+   * Displays an accessible confirmation modal before permanently deleting an active event plan
+   * @returns {void}
+   */
   confirmDeleteEvent() {
     const current = this.store.getCurrentEvent();
     if (!current) return;
@@ -151,9 +188,14 @@ class App {
     });
   }
 
+  /**
+   * Switches active navigation tab and updates UI state
+   * @param {string} tab - Target tab identifier (e.g. 'dashboard', 'budget', 'timeline', 'vendors', 'ideas', 'crisis', 'accessibility')
+   * @returns {void}
+   */
   navigateTo(tab) {
     this.activeTab = tab;
-    // Update tab button classes
+    // Update tab button classes and aria-selected states
     document.querySelectorAll('.tab-btn').forEach(btn => {
       const isTarget = btn.getAttribute('data-tab') === tab;
       btn.classList.toggle('active', isTarget);
@@ -162,17 +204,25 @@ class App {
     this.renderMainContent();
   }
 
+  /**
+   * Top-level render loop: refreshes navigation, hero banner, and current active tab view
+   * @returns {void}
+   */
   render() {
     this.renderTopNav();
     this.renderHero();
     this.renderMainContent();
   }
 
+  /**
+   * Synchronizes top header dropdown options with current events and currency state
+   * @returns {void}
+   */
   renderTopNav() {
     const events = this.store.getEvents();
     const current = this.store.getCurrentEvent();
-    const select = document.getElementById('global-event-select');
-    const currencySelect = document.getElementById('global-currency-select');
+    const select = /** @type {HTMLSelectElement|null} */ (document.getElementById('global-event-select'));
+    const currencySelect = /** @type {HTMLSelectElement|null} */ (document.getElementById('global-currency-select'));
 
     if (select) {
       select.innerHTML = events.map(e => `
@@ -187,6 +237,10 @@ class App {
     }
   }
 
+  /**
+   * Renders the event overview hero banner with metadata badges and quick actions
+   * @returns {void}
+   */
   renderHero() {
     const hero = document.getElementById('event-hero-section');
     const event = this.store.getCurrentEvent();
@@ -241,7 +295,7 @@ class App {
     });
 
     hero.querySelector('#hero-ai-assistant-btn')?.addEventListener('click', () => {
-      this.drawer.open('chat');
+      this.drawer?.open('chat');
     });
 
     hero.querySelector('#hero-crisis-btn')?.addEventListener('click', () => {
@@ -257,6 +311,10 @@ class App {
     });
   }
 
+  /**
+   * Displays the comprehensive event metadata and target date editor modal
+   * @returns {void}
+   */
   showEditEventModal() {
     const current = this.store.getCurrentEvent();
     if (!current) return;
@@ -325,21 +383,21 @@ class App {
 
     modal.querySelector('.cancel-edit-btn')?.addEventListener('click', closeModal);
     modal.querySelector('.save-edit-btn')?.addEventListener('click', () => {
-      const form = modal.querySelector('#edit-event-full-form');
+      const form = /** @type {HTMLFormElement} */ (modal.querySelector('#edit-event-full-form'));
       if (!form.checkValidity()) {
         form.reportValidity();
         return;
       }
 
       const updated = {
-        title: modal.querySelector('#edit-evt-title').value.trim(),
-        type: modal.querySelector('#edit-evt-type').value,
-        date: modal.querySelector('#edit-evt-date').value,
-        time: modal.querySelector('#edit-evt-time').value || '18:00',
-        guestCount: Number(modal.querySelector('#edit-evt-guests').value) || 0,
-        totalBudget: Number(modal.querySelector('#edit-evt-budget').value) || 0,
-        location: modal.querySelector('#edit-evt-location').value.trim(),
-        vibe: modal.querySelector('#edit-evt-vibe').value.trim()
+        title: (/** @type {HTMLInputElement} */ (modal.querySelector('#edit-evt-title'))).value.trim(),
+        type: (/** @type {HTMLSelectElement} */ (modal.querySelector('#edit-evt-type'))).value,
+        date: (/** @type {HTMLInputElement} */ (modal.querySelector('#edit-evt-date'))).value,
+        time: (/** @type {HTMLInputElement} */ (modal.querySelector('#edit-evt-time'))).value || '18:00',
+        guestCount: Number((/** @type {HTMLInputElement} */ (modal.querySelector('#edit-evt-guests'))).value) || 0,
+        totalBudget: Number((/** @type {HTMLInputElement} */ (modal.querySelector('#edit-evt-budget'))).value) || 0,
+        location: (/** @type {HTMLInputElement} */ (modal.querySelector('#edit-evt-location'))).value.trim(),
+        vibe: (/** @type {HTMLTextAreaElement} */ (modal.querySelector('#edit-evt-vibe'))).value.trim()
       };
 
       this.store.updateEvent(current.id, updated);
@@ -349,6 +407,10 @@ class App {
     });
   }
 
+  /**
+   * Renders the active tab view into the main content viewport
+   * @returns {void}
+   */
   renderMainContent() {
     const main = document.getElementById('main-content-view');
     const event = this.store.getCurrentEvent();
@@ -395,3 +457,5 @@ if (typeof document !== 'undefined') {
     window.auraplanApp = new App();
   });
 }
+
+export { App };

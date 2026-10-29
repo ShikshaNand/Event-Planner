@@ -8,7 +8,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "test": "node --test tests/*.test.js",
-    "lint": "node --check server.js test-gemini.js js/app.js js/components/aiDrawer.js js/services/aiService.js js/services/geminiClient.js"
+    "lint": "node --check server.js test-gemini.js js/app.js js/state/store.js js/state/initialData.js js/utils/formatters.js js/utils/sanitizer.js js/utils/validators.js js/services/aiService.js js/services/exportService.js js/services/geminiClient.js js/components/modal.js js/components/toast.js js/components/aiDrawer.js js/views/budgetView.js js/views/dashboardView.js js/views/timelineView.js js/views/vendorView.js js/views/guestView.js js/views/crisisView.js js/views/ideasView.js"
   },
   "keywords": [
     "event-planner",

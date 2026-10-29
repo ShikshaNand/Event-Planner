@@ -1,5 +1,6 @@
 /**
  * Vendor Procurement & RFP Checklist View
+ * Manages vendor contacts, contract signing, insurance verification (COI), and contingency backup plans
  */
 
 import { formatCurrency } from '../utils/formatters.js';
@@ -8,6 +9,13 @@ import { validateVendor } from '../utils/validators.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 
+/**
+ * Renders the Vendor Procurement & RFP View
+ * @param {import('../state/store.js').Event|null} event - Active event plan
+ * @param {import('../state/store.js').EventStore} store - Central event store
+ * @param {import('../services/aiService.js').AIService} aiService - GenAI service
+ * @returns {HTMLElement} Vendor view container DOM element
+ */
 export function renderVendorView(event, store, aiService) {
   const container = document.createElement('div');
   container.className = 'animate-fade-in';

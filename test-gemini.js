@@ -27,7 +27,7 @@ if (fs.existsSync(envPath)) {
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 async function testGemini2() {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY.includes("YOUR_") || GEMINI_API_KEY.includes("यहाँ_अपनी")) {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY.includes("YOUR_") || GEMINI_API_KEY.includes("INSERT_")) {
     console.error("⚠️  GEMINI_API_KEY is not set.");
     console.error("👉 Please add your key to a .env file: GEMINI_API_KEY=AIzaSy...");
     console.error("👉 Or run: $env:GEMINI_API_KEY='your_key'; node test-gemini.js");

@@ -8,13 +8,13 @@
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 /** Ordered fallback chain — gemini-2.0-flash as primary, followed by fallbacks */
-const MODEL_FALLBACK_CHAIN = [
+export const MODEL_FALLBACK_CHAIN = Object.freeze([
   'gemini-2.0-flash',
   'gemini-flash-latest',
   'gemini-1.5-pro',
   'gemini-1.5-flash',
   'gemini-flash-lite-latest'
-];
+]);
 
 const MAX_RETRIES = 2;
 const BASE_DELAY_MS = 800;

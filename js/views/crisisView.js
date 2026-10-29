@@ -1,12 +1,19 @@
 /**
  * Emergency Crisis & Problem Solver Matrix View
- * High-reliability real-time emergency resolution engine for events
+ * High-reliability real-time emergency triage engine delivering immediate mitigation checklists and host scripts
  */
 
 import { escapeHTML } from '../utils/sanitizer.js';
 import { CRISIS_KNOWLEDGE_BASE } from '../state/initialData.js';
 import { showToast } from '../components/toast.js';
 
+/**
+ * Renders the Emergency Crisis Resolution Matrix View
+ * @param {import('../state/store.js').Event|null} event - Active event plan
+ * @param {import('../state/store.js').EventStore} store - Central event store
+ * @param {import('../services/aiService.js').AIService} aiService - GenAI service
+ * @returns {HTMLElement} Crisis view container DOM element
+ */
 export function renderCrisisView(event, store, aiService) {
   const container = document.createElement('div');
   container.className = 'animate-fade-in';

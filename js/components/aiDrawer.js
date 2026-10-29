@@ -1,13 +1,28 @@
 /**
  * GenAI Copilot Drawer & Assistant Panel
+ * Provides generative event blueprinting, natural language Q&A, and LLM model selection
  */
 
 import { escapeHTML } from '../utils/sanitizer.js';
 import { SUPPORTED_CURRENCIES, getCurrencySymbol } from '../utils/formatters.js';
 import { showToast } from './toast.js';
 
+/**
+ * @typedef {Object} AIDrawerInstance
+ * @property {(tab?: 'blueprint'|'chat'|'settings') => void} open - Opens drawer to target tab
+ * @property {() => void} close - Closes assistant drawer
+ */
+
+/** @type {AIDrawerInstance|null} */
 let drawerInstance = null;
 
+/**
+ * Initializes and binds the PlanAura GenAI Copilot slide-over drawer
+ * @param {import('../state/store.js').EventStore} store - Central event store
+ * @param {import('../services/aiService.js').AIService} aiService - GenAI orchestration service
+ * @param {(newEventId: string) => void} onEventAdded - Callback when a new plan is synthesized
+ * @returns {AIDrawerInstance} Drawer controller instance
+ */
 export function initAIDrawer(store, aiService, onEventAdded) {
   if (drawerInstance) return drawerInstance;
 

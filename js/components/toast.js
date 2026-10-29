@@ -1,11 +1,27 @@
 /**
  * Accessible Toast Notification System
+ * Renders non-blocking notifications with polite aria-live announcements and auto-dismissal
  */
 
 import { escapeHTML } from '../utils/sanitizer.js';
 
+/**
+ * Icons mapped to toast alert severity types
+ * @type {Readonly<Record<'success'|'error'|'info', string>>}
+ */
+const TOAST_ICONS = Object.freeze({
+  success: '✓',
+  error: '✕',
+  info: 'ℹ'
+});
+
+/** @type {HTMLElement|null} */
 let container = null;
 
+/**
+ * Ensures global toast container exists in DOM with polite aria-live region
+ * @returns {HTMLElement|null} Toast container element
+ */
 function ensureContainer() {
   if (!container && typeof document !== 'undefined') {
     container = document.createElement('div');
@@ -18,10 +34,11 @@ function ensureContainer() {
 }
 
 /**
- * Show a toast notification
- * @param {string} message 
- * @param {'success'|'error'|'info'} [type='info']
- * @param {number} [duration=3500]
+ * Dispatches an accessible toast notification banner
+ * @param {string} message - Text notification message to display
+ * @param {'success'|'error'|'info'} [type='info'] - Severity level of the notification
+ * @param {number} [duration=3500] - Lifespan in milliseconds before auto-dismissal
+ * @returns {void}
  */
 export function showToast(message, type = 'info', duration = 3500) {
   const box = ensureContainer();
@@ -31,14 +48,8 @@ export function showToast(message, type = 'info', duration = 3500) {
   toast.className = `toast toast-${type}`;
   toast.setAttribute('role', 'alert');
 
-  const icons = {
-    success: '✓',
-    error: '✕',
-    info: 'ℹ'
-  };
-
   toast.innerHTML = `
-    <span style="font-weight: 800; font-size: 1.1rem;">${icons[type] || '•'}</span>
+    <span style="font-weight: 800; font-size: 1.1rem;">${TOAST_ICONS[type] || '•'}</span>
     <span>${escapeHTML(message)}</span>
   `;
 

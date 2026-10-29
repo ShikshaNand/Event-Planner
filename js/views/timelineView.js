@@ -1,5 +1,6 @@
 /**
  * Interactive Timeline & Run-of-Show Planner View
+ * Chronological execution schedule, assignee accountability, phase filtering, and iCal calendar export
  */
 
 import { escapeHTML } from '../utils/sanitizer.js';
@@ -8,6 +9,13 @@ import { openModal, closeModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
 import { exportTimelineICal } from '../services/exportService.js';
 
+/**
+ * Renders the Interactive Timeline and Run-of-Show View
+ * @param {import('../state/store.js').Event|null} event - Active event plan
+ * @param {import('../state/store.js').EventStore} store - Central event store
+ * @param {import('../services/aiService.js').AIService} aiService - GenAI service
+ * @returns {HTMLElement} Timeline view container DOM element
+ */
 export function renderTimelineView(event, store, aiService) {
   const container = document.createElement('div');
   container.className = 'animate-fade-in';
@@ -152,6 +160,11 @@ export function renderTimelineView(event, store, aiService) {
   return container;
 }
 
+/**
+ * Displays modal to add a new timeline milestone
+ * @param {import('../state/store.js').Event} event 
+ * @param {import('../state/store.js').EventStore} store 
+ */
 function showAddMilestoneModal(event, store) {
   const contentHtml = `
     <form id="add-milestone-form">

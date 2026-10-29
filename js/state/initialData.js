@@ -1,8 +1,9 @@
 /**
  * Comprehensive Initial Seed Data for Weddings, Birthdays, and Community Events
+ * Immutable blueprint templates for enterprise event operations
  */
 
-export const INITIAL_EVENTS = [
+export const INITIAL_EVENTS = Object.freeze([
   {
     id: 'evt_wedding_01',
     title: 'Aria & Julian\'s Botanical Greenhouse Wedding',
@@ -249,9 +250,9 @@ export const INITIAL_EVENTS = [
       { id: 'idc_02', category: 'Eco', title: 'Zero Single-Use Plastic Water Refill Oasis', description: 'Partner with local spring water supplier to offer free rapid-fill hydration stations with commemorative aluminum reusable bottles.' }
     ]
   }
-];
+]);
 
-export const CRISIS_KNOWLEDGE_BASE = [
+export const CRISIS_KNOWLEDGE_BASE = Object.freeze([
   {
     category: 'Weather Emergencies',
     title: 'Sudden Torrential Rain During Outdoor Event',
@@ -337,4 +338,4 @@ export const CRISIS_KNOWLEDGE_BASE = [
       'Venue AED (Defibrillator) and First Aid kit locations marked on run-of-show.'
     ]
   }
-];
+]);
