@@ -72,7 +72,6 @@ class App {
     });
 
     // Event Switcher dropdown
-    // Event Switcher dropdown
     const eventSelect = document.getElementById('global-event-select');
     eventSelect?.addEventListener('change', (e) => {
       this.store.setCurrentEvent(e.target.value);

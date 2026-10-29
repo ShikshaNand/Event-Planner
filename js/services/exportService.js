@@ -25,11 +25,15 @@ export function downloadFile(filename, content, mimeType) {
 }
 
 /**
- * Exports budget items to CSV format
+ * Transforms event budget items into a standard CSV formatted string
+ * Pure function: separated from DOM download for clean testing and reuse
  * @param {object} event 
+ * @returns {string}
  */
-export function exportBudgetCSV(event) {
-  if (!event || !event.budgetItems) return;
+export function generateBudgetCSV(event) {
+  if (!event || !Array.isArray(event.budgetItems) || event.budgetItems.length === 0) {
+    return '';
+  }
   const headers = ['Category', 'Item Description', 'Estimated Cost', 'Actual Cost', 'Paid to Date', 'Status', 'Notes'];
   const rows = event.budgetItems.map(item => [
     `"${(item.category || '').replace(/"/g, '""')}"`,
@@ -41,7 +45,16 @@ export function exportBudgetCSV(event) {
     `"${(item.notes || '').replace(/"/g, '""')}"`
   ]);
 
-  const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+  return [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+}
+
+/**
+ * Exports budget items to CSV format and triggers browser file download
+ * @param {object} event 
+ */
+export function exportBudgetCSV(event) {
+  const csvContent = generateBudgetCSV(event);
+  if (!csvContent) return;
   const safeTitle = (event.title || 'event').toLowerCase().replace(/[^a-z0-9]/g, '_');
   downloadFile(`${safeTitle}_budget.csv`, csvContent, 'text/csv;charset=utf-8;');
 }

@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
 
-const MIME_TYPES = {
+const MIME_TYPES = Object.freeze({
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
@@ -20,7 +20,7 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf'
-};
+});
 
 const server = http.createServer((req, res) => {
   // Normalize URL and remove query strings

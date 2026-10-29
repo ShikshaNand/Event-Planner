@@ -4,34 +4,51 @@
  */
 
 /**
- * Supported currencies with locale mappings for proper symbol placement
+ * @typedef {Object} CurrencyConfig
+ * @property {string} code - ISO currency code (e.g. USD, EUR, INR)
+ * @property {string} name - Full currency name
+ * @property {string} symbol - Primary display symbol
+ * @property {string} locale - Standard BCP-47 locale tag
  */
-export const SUPPORTED_CURRENCIES = [
-  { code: 'USD', name: 'US Dollar', symbol: '$', locale: 'en-US' },
-  { code: 'EUR', name: 'Euro', symbol: '€', locale: 'de-DE' },
-  { code: 'GBP', name: 'British Pound', symbol: '£', locale: 'en-GB' },
-  { code: 'INR', name: 'Indian Rupee', symbol: '₹', locale: 'en-IN' },
-  { code: 'JPY', name: 'Japanese Yen', symbol: '¥', locale: 'ja-JP' },
-  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', locale: 'en-AU' },
-  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', locale: 'en-CA' },
-  { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', locale: 'de-CH' },
-  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', locale: 'zh-CN' },
-  { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', locale: 'ar-AE' },
-  { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$', locale: 'en-SG' },
-  { code: 'MXN', name: 'Mexican Peso', symbol: 'MX$', locale: 'es-MX' },
-  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', locale: 'pt-BR' },
-  { code: 'KRW', name: 'South Korean Won', symbol: '₩', locale: 'ko-KR' },
-  { code: 'ZAR', name: 'South African Rand', symbol: 'R', locale: 'en-ZA' },
-  { code: 'SEK', name: 'Swedish Krona', symbol: 'kr', locale: 'sv-SE' },
-  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$', locale: 'en-NZ' },
-  { code: 'THB', name: 'Thai Baht', symbol: '฿', locale: 'th-TH' },
-  { code: 'TRY', name: 'Turkish Lira', symbol: '₺', locale: 'tr-TR' },
-  { code: 'RUB', name: 'Russian Ruble', symbol: '₽', locale: 'ru-RU' },
-  { code: 'PLN', name: 'Polish Zloty', symbol: 'zł', locale: 'pl-PL' },
-  { code: 'PHP', name: 'Philippine Peso', symbol: '₱', locale: 'en-PH' },
-  { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', locale: 'en-NG' },
-  { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£', locale: 'ar-EG' }
-];
+
+/**
+ * @typedef {Object} CountdownResult
+ * @property {number} days - Number of days difference
+ * @property {string} label - Human-readable countdown label
+ * @property {boolean} isPast - True if the event date is in the past
+ */
+
+/**
+ * Supported currencies with locale mappings for proper symbol placement.
+ * Immutable frozen collection to prevent runtime mutations.
+ * @type {ReadonlyArray<Readonly<CurrencyConfig>>}
+ */
+export const SUPPORTED_CURRENCIES = Object.freeze([
+  Object.freeze({ code: 'USD', name: 'US Dollar', symbol: '$', locale: 'en-US' }),
+  Object.freeze({ code: 'EUR', name: 'Euro', symbol: '€', locale: 'de-DE' }),
+  Object.freeze({ code: 'GBP', name: 'British Pound', symbol: '£', locale: 'en-GB' }),
+  Object.freeze({ code: 'INR', name: 'Indian Rupee', symbol: '₹', locale: 'en-IN' }),
+  Object.freeze({ code: 'JPY', name: 'Japanese Yen', symbol: '¥', locale: 'ja-JP' }),
+  Object.freeze({ code: 'AUD', name: 'Australian Dollar', symbol: 'A$', locale: 'en-AU' }),
+  Object.freeze({ code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', locale: 'en-CA' }),
+  Object.freeze({ code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', locale: 'de-CH' }),
+  Object.freeze({ code: 'CNY', name: 'Chinese Yuan', symbol: '¥', locale: 'zh-CN' }),
+  Object.freeze({ code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', locale: 'ar-AE' }),
+  Object.freeze({ code: 'SGD', name: 'Singapore Dollar', symbol: 'S$', locale: 'en-SG' }),
+  Object.freeze({ code: 'MXN', name: 'Mexican Peso', symbol: 'MX$', locale: 'es-MX' }),
+  Object.freeze({ code: 'BRL', name: 'Brazilian Real', symbol: 'R$', locale: 'pt-BR' }),
+  Object.freeze({ code: 'KRW', name: 'South Korean Won', symbol: '₩', locale: 'ko-KR' }),
+  Object.freeze({ code: 'ZAR', name: 'South African Rand', symbol: 'R', locale: 'en-ZA' }),
+  Object.freeze({ code: 'SEK', name: 'Swedish Krona', symbol: 'kr', locale: 'sv-SE' }),
+  Object.freeze({ code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$', locale: 'en-NZ' }),
+  Object.freeze({ code: 'THB', name: 'Thai Baht', symbol: '฿', locale: 'th-TH' }),
+  Object.freeze({ code: 'TRY', name: 'Turkish Lira', symbol: '₺', locale: 'tr-TR' }),
+  Object.freeze({ code: 'RUB', name: 'Russian Ruble', symbol: '₽', locale: 'ru-RU' }),
+  Object.freeze({ code: 'PLN', name: 'Polish Zloty', symbol: 'zł', locale: 'pl-PL' }),
+  Object.freeze({ code: 'PHP', name: 'Philippine Peso', symbol: '₱', locale: 'en-PH' }),
+  Object.freeze({ code: 'NGN', name: 'Nigerian Naira', symbol: '₦', locale: 'en-NG' }),
+  Object.freeze({ code: 'EGP', name: 'Egyptian Pound', symbol: 'E£', locale: 'ar-EG' })
+]);
 
 /**
  * Lookup locale by currency code

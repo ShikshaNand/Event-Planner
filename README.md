@@ -56,12 +56,14 @@ Event planning frequently suffers from:
 
 ### 5. Testing
 - **Native Automated Test Suite:** Uses Node.js's built-in test runner (`node --test tests/*.test.js`).
-- **100% Pass Rate Across 25 Unit & Integration Tests:**
+- **100% Pass Rate Across 38 Unit & Integration Tests (7 Test Suites):**
   - `tests/budget.test.js`: Validates spend calculations, overbudget detection, and line-item mutations.
   - `tests/sanitizer.test.js`: Verifies XSS script injection immunity and safe JSON parsing.
   - `tests/validators.test.js`: Enforces schema integrity for events, budgets, timeline items, and vendors.
   - `tests/timeline.test.js`: Tests chronological sorting and iCalendar RFC 5545 compliance.
   - `tests/aiService.test.js`: Tests heuristic blueprints, weather crisis solving, and budget optimization.
+  - `tests/formatters.test.js`: Validates internationalized multi-currency formatting, countdowns, and immutability.
+  - `tests/exportService.test.js`: Tests CSV export generation, quote escaping, and RFC 5545 iCalendar serialization.
 
 ### 6. Accessibility & Inclusion (WCAG AA)
 - **High-Contrast Design System:** Curated contrast ratios complying with WCAG 2.1 AA standards.
@@ -127,7 +129,7 @@ Event planning frequently suffers from:
 ```bash
 npm test
 ```
-*Executes all 25 automated unit tests verifying calculations, validation, and AI engines.*
+*Executes all 38 automated unit tests across 7 suites verifying calculations, formatting, validation, exports, and AI engines.*
 
 ### 3. Launch Development Server
 ```bash
