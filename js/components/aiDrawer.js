@@ -19,6 +19,8 @@ export function initAIDrawer(store, aiService, onEventAdded) {
   drawer.setAttribute('role', 'complementary');
   drawer.setAttribute('aria-label', 'PlanAura GenAI Copilot');
 
+  const activeModelDetails = store.getActiveModelDetails ? store.getActiveModelDetails() : { label: '⚡ Built-in Expert Engine' };
+
   drawer.innerHTML = `
     <div class="drawer-header">
       <div style="display: flex; align-items: center; gap: 0.6rem;">
@@ -26,7 +28,7 @@ export function initAIDrawer(store, aiService, onEventAdded) {
         <div>
           <h3 style="font-size: 1.1rem; line-height: 1.1;">PlanAura GenAI Copilot</h3>
           <span style="font-size: 0.72rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;" id="ai-engine-status-badge">
-            ${store.hasApiKey() ? '🟢 Live Gemini API' : '⚡ Built-in Expert Engine'}
+            ${activeModelDetails.label}
           </span>
         </div>
       </div>
@@ -141,23 +143,46 @@ export function initAIDrawer(store, aiService, onEventAdded) {
 
       <!-- Settings Tab -->
       <div id="drawer-tab-settings" class="drawer-tab-content" style="display: none;">
-        <h4 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-primary);">Gemini API Key Configuration</h4>
+        <h4 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-primary);">AI Model & API Configuration</h4>
 
         <div style="background: ${store.hasApiKey() ? 'rgba(16, 185, 129, 0.1)' : 'rgba(99, 102, 241, 0.1)'}; border: 1px solid ${store.hasApiKey() ? 'rgba(16, 185, 129, 0.3)' : 'rgba(99, 102, 241, 0.3)'}; padding: 0.85rem; border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.85rem;" id="api-status-banner">
-          <strong style="color: ${store.hasApiKey() ? 'var(--accent-emerald)' : 'var(--accent-primary)'};" id="api-status-title">${store.hasApiKey() ? '✓ Live Gemini Flash Active' : '⚡ Built-in Expert Engine Active'}</strong>
-          <p style="color: var(--text-secondary); margin-top: 0.2rem;" id="api-status-desc">${store.hasApiKey() ? 'Your Gemini API key is configured. Blueprints, Copilot, accessibility audits, and budget optimization are powered by Google Gemini.' : 'Enter your Google Gemini API key below to unlock live AI reasoning, or continue using the high-accuracy built-in heuristic engine.'}</p>
+          <strong style="color: ${store.hasApiKey() ? 'var(--accent-emerald)' : 'var(--accent-primary)'};" id="api-status-title">
+            ${store.hasApiKey() ? `✓ Active Model: ${store.getAiModel()} (${store.getActiveModelDetails().provider})` : '⚡ Built-in Expert Engine Active'}
+          </strong>
+          <p style="color: var(--text-secondary); margin-top: 0.2rem;" id="api-status-desc">
+            ${store.hasApiKey() ? `All blueprints, crisis triage, cost optimization, and Ask Copilot queries are currently running on ${store.getAiModel()}.` : 'Enter your Google Gemini or Groq API key below to unlock live AI reasoning, or continue using the high-accuracy built-in heuristic engine.'}
+          </p>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label">Active AI Model</label>
+          <select class="form-select" id="ai-model-select">
+            <optgroup label="Google Gemini (Official)">
+              <option value="gemini-2.0-flash" ${store.getAiModel() === 'gemini-2.0-flash' ? 'selected' : ''}>⚡ Gemini 2.0 Flash (Recommended: Fast & Intelligent)</option>
+              <option value="gemini-1.5-pro" ${store.getAiModel() === 'gemini-1.5-pro' ? 'selected' : ''}>🧠 Gemini 1.5 Pro (Deep Complex Reasoning)</option>
+              <option value="gemini-1.5-flash" ${store.getAiModel() === 'gemini-1.5-flash' ? 'selected' : ''}>🏎️ Gemini 1.5 Flash (Standard Fast)</option>
+              <option value="gemini-flash-lite-latest" ${store.getAiModel() === 'gemini-flash-lite-latest' ? 'selected' : ''}>🪶 Gemini Flash Lite (Low Quota)</option>
+            </optgroup>
+            <optgroup label="Groq Cloud (Open Source / Free)">
+              <option value="llama-3.3-70b-versatile" ${store.getAiModel() === 'llama-3.3-70b-versatile' ? 'selected' : ''}>🚀 Llama 3.3 70B (Groq - 14,400 Free Req/Day)</option>
+              <option value="mixtral-8x7b-32768" ${store.getAiModel() === 'mixtral-8x7b-32768' ? 'selected' : ''}>⚡ Mixtral 8x7B (Groq)</option>
+            </optgroup>
+          </select>
+          <span style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.25rem;">
+            Select which AI model handles live planning and assistant requests.
+          </span>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Google Gemini API Key</label>
-          <input type="password" class="form-input" id="api-key-input" placeholder="Paste your Gemini API key..." value="${escapeHTML(store.getApiKey())}" />
+          <label class="form-label">API Key (Gemini or Groq)</label>
+          <input type="password" class="form-input" id="api-key-input" placeholder="Paste your Gemini AIza... or Groq gsk_... key" value="${escapeHTML(store.getApiKey())}" />
           <span style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.25rem;">
-            🔒 Stored securely in your browser local storage. Never transmitted to any third-party server.
+            🔒 Stored securely in your browser localStorage. Never transmitted to any third-party server.
           </span>
         </div>
 
         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-          <button class="btn btn-primary btn-sm" id="save-api-key-btn">Save Key</button>
+          <button class="btn btn-primary btn-sm" id="save-api-key-btn">Save Key & Model</button>
           <button class="btn btn-outline btn-sm" id="clear-api-key-btn">Clear Key</button>
         </div>
 
@@ -297,9 +322,11 @@ export function initAIDrawer(store, aiService, onEventAdded) {
     const currentEvent = store.getCurrentEvent();
 
     // Generate intelligent response
+    const activeDetails = store.getActiveModelDetails ? store.getActiveModelDetails() : { model: 'gemini-2.0-flash', provider: 'Gemini', hasKey: store.hasApiKey() };
+
     const botBubble = document.createElement('div');
     botBubble.style.cssText = 'background: var(--bg-tertiary); color: var(--text-primary); padding: 0.85rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; border-left: 3px solid var(--accent-cyan); line-height: 1.5; max-width: 90%;';
-    botBubble.innerHTML = '<span class="loading-spinner" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 0.4rem;"></span> Consulting Google Gemini GenAI...';
+    botBubble.innerHTML = `<span class="loading-spinner" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 0.4rem;"></span> Consulting ${activeDetails.hasKey ? activeDetails.model : 'GenAI Expert Engine'}...`;
     chatHistory.appendChild(botBubble);
     chatHistory.scrollTop = chatHistory.scrollHeight;
 
@@ -308,7 +335,7 @@ export function initAIDrawer(store, aiService, onEventAdded) {
       botBubble.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.25rem;">
           <strong style="color: var(--accent-cyan); font-size: 0.85rem;">✨ PlanAura Copilot</strong>
-          <span style="font-size: 0.7rem; color: var(--text-tertiary);">${store.hasApiKey() ? 'Live Gemini Flash' : 'Built-in Engine'}</span>
+          <span style="font-size: 0.7rem; color: var(--text-tertiary); font-weight: 600;">${activeDetails.hasKey ? `${activeDetails.model} (${activeDetails.provider})` : 'Built-in Engine'}</span>
         </div>
         ${formatGeminiResponse(response)}
       `;
@@ -334,20 +361,56 @@ export function initAIDrawer(store, aiService, onEventAdded) {
     });
   });
 
+  function updateModelStatusUI() {
+    const details = store.getActiveModelDetails ? store.getActiveModelDetails() : { label: '⚡ Built-in Expert Engine', hasKey: false, model: 'gemini-2.0-flash', provider: 'Gemini' };
+    const statusBadge = drawer.querySelector('#ai-engine-status-badge');
+    const statusBanner = drawer.querySelector('#api-status-banner');
+    const statusTitle = drawer.querySelector('#api-status-title');
+    const statusDesc = drawer.querySelector('#api-status-desc');
+
+    if (statusBadge) statusBadge.textContent = details.label;
+
+    if (statusBanner && statusTitle && statusDesc) {
+      if (details.hasKey) {
+        statusBanner.style.background = 'rgba(16, 185, 129, 0.1)';
+        statusBanner.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        statusTitle.style.color = 'var(--accent-emerald)';
+        statusTitle.textContent = `✓ Active Model: ${details.model} (${details.provider})`;
+        statusDesc.textContent = `All event blueprints, crisis solving, cost optimization, and Ask Copilot queries are currently running on ${details.model}.`;
+      } else {
+        statusBanner.style.background = 'rgba(99, 102, 241, 0.1)';
+        statusBanner.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+        statusTitle.style.color = 'var(--accent-primary)';
+        statusTitle.textContent = '⚡ Built-in Expert Engine Active';
+        statusDesc.textContent = 'Enter your Google Gemini or Groq API key below to unlock live AI reasoning, or continue using the high-accuracy built-in heuristic engine.';
+      }
+    }
+  }
+
+  // Model change listener
+  const modelSelect = drawer.querySelector('#ai-model-select');
+  modelSelect?.addEventListener('change', (e) => {
+    const chosenModel = e.target.value;
+    if (store.setAiModel) store.setAiModel(chosenModel);
+    updateModelStatusUI();
+    showToast(`Switched active AI model to ${chosenModel}`, 'info');
+  });
+
   // Settings: API Key Save/Clear
   drawer.querySelector('#save-api-key-btn')?.addEventListener('click', () => {
     const key = drawer.querySelector('#api-key-input').value;
+    const model = modelSelect ? modelSelect.value : (store.getAiModel ? store.getAiModel() : 'gemini-2.0-flash');
+    if (store.setAiModel) store.setAiModel(model);
     store.setApiKey(key);
-    drawer.querySelector('#ai-engine-status-badge').textContent = store.hasApiKey()
-      ? '🟢 Live Gemini API'
-      : '⚡ Built-in Expert Engine';
-    showToast('Gemini API key updated in session storage', 'success');
+    updateModelStatusUI();
+    const details = store.getActiveModelDetails ? store.getActiveModelDetails() : { model, provider: 'Gemini' };
+    showToast(store.hasApiKey() ? `Saved! Active Model: ${details.model} (${details.provider})` : 'Settings saved', 'success');
   });
 
   drawer.querySelector('#clear-api-key-btn')?.addEventListener('click', () => {
     store.setApiKey('');
     drawer.querySelector('#api-key-input').value = '';
-    drawer.querySelector('#ai-engine-status-badge').textContent = '⚡ Built-in Expert Engine';
+    updateModelStatusUI();
     showToast('API key removed. Running on Built-in Expert Engine', 'info');
   });
 

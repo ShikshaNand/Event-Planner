@@ -9,7 +9,9 @@ import { generateId } from '../utils/formatters.js';
 
 const STORAGE_KEY = 'auraplan_events_v2';
 const API_KEY_SESSION_KEY = 'auraplan_gemini_api_key';
+const AI_MODEL_STORAGE_KEY = 'auraplan_ai_model';
 const DEFAULT_API_KEY = '';
+const DEFAULT_AI_MODEL = 'gemini-2.0-flash';
 
 class EventStore {
   constructor() {
@@ -30,8 +32,10 @@ class EventStore {
           window.sessionStorage?.setItem(API_KEY_SESSION_KEY, DEFAULT_API_KEY);
         } catch { /* ignore storage errors */ }
       }
+      this.aiModel = window.localStorage?.getItem(AI_MODEL_STORAGE_KEY) || DEFAULT_AI_MODEL;
     } else {
       this.apiKey = DEFAULT_API_KEY;
+      this.aiModel = DEFAULT_AI_MODEL;
     }
   }
 
@@ -93,6 +97,34 @@ class EventStore {
 
   hasApiKey() {
     return Boolean(this.apiKey && this.apiKey.length > 5);
+  }
+
+  setAiModel(model) {
+    this.aiModel = (model || DEFAULT_AI_MODEL).trim();
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage?.setItem(AI_MODEL_STORAGE_KEY, this.aiModel);
+      } catch { /* ignore storage errors */ }
+    }
+    this.notify('aiModelUpdate', { model: this.aiModel });
+  }
+
+  getAiModel() {
+    return this.aiModel || DEFAULT_AI_MODEL;
+  }
+
+  getActiveModelDetails() {
+    const model = this.getAiModel();
+    const key = this.getApiKey();
+    const isGroq = key.startsWith('gsk_') || model.startsWith('llama-') || model.startsWith('mixtral-');
+    const provider = isGroq ? 'Groq' : 'Gemini';
+
+    return {
+      model,
+      provider,
+      hasKey: this.hasApiKey(),
+      label: this.hasApiKey() ? `🟢 ${model} (${provider})` : '⚡ Built-in Expert Engine'
+    };
   }
 
   getEvents() {

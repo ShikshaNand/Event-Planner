@@ -34,10 +34,11 @@ Event planning frequently suffers from:
   - Tactical **AI Cost Optimizer** with line-item reduction levers and vendor negotiation scripts.
   - Interactive **Run-of-Show Schedule** with minute-by-minute execution cues.
 
-### 3. Security
+### 3. Security & GenAI Configuration
+- **Safe API Key Handling:** API keys are never hardcoded. Local scripts read from `.env` (safeguarded via `.gitignore`), and web clients use in-browser `localStorage` or `sessionStorage`. An `.env.example` template is provided.
+- **Upgraded GenAI Engine:** Powered by **Google Gemini 2.0 Flash (`gemini-2.0-flash`)** for rapid, high-intelligence event synthesis and crisis mitigation.
 - **Strict XSS Defense:** All user inputs and AI outputs are escaped via entity encoding (`escapeHTML`) or constructed programmatically.
 - **Content Security Policy (CSP):** Configured HTTP headers and `<meta>` policy restricting script, style, and connection origins.
-- **Safe API Key Handling:** Google Gemini API keys are kept strictly in browser `sessionStorage` or local memory, never persisted to backend servers or exposed in logs.
 - **Path Traversal Protection:** Static server strictly validates file paths against directory traversal attacks (`..`).
 
 ### 4. Efficiency
@@ -47,7 +48,7 @@ Event planning frequently suffers from:
 
 ### 5. Testing
 - **Native Automated Test Suite:** Uses Node.js's built-in test runner (`node --test tests/*.test.js`).
-- **100% Pass Rate Across 24 Unit & Integration Tests:**
+- **100% Pass Rate Across 25 Unit & Integration Tests:**
   - `tests/budget.test.js`: Validates spend calculations, overbudget detection, and line-item mutations.
   - `tests/sanitizer.test.js`: Verifies XSS script injection immunity and safe JSON parsing.
   - `tests/validators.test.js`: Enforces schema integrity for events, budgets, timeline items, and vendors.
@@ -118,7 +119,7 @@ Event planning frequently suffers from:
 ```bash
 npm test
 ```
-*Executes all 24 automated unit tests verifying calculations, validation, and AI engines.*
+*Executes all 25 automated unit tests verifying calculations, validation, and AI engines.*
 
 ### 3. Launch Development Server
 ```bash

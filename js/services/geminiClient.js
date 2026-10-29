@@ -1,19 +1,19 @@
 /**
  * Gemini REST Client — Production Integration
- * Uses X-goog-api-key header authentication with gemini-3.8-flash model
+ * Uses X-goog-api-key header authentication with gemini-2.0-flash model
  * Supports timeout, retry with exponential backoff, model fallback chain,
  * error handling, and JSON response mode
  */
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-/** Ordered fallback chain — gemini-flash-lite-latest has active quota, followed by flash-latest */
+/** Ordered fallback chain — gemini-2.0-flash as primary, followed by fallbacks */
 const MODEL_FALLBACK_CHAIN = [
-  'gemini-flash-lite-latest',
+  'gemini-2.0-flash',
   'gemini-flash-latest',
-  'gemini-3-flash-preview',
-  'gemini-3.1-flash-lite',
-  'gemini-3.8-flash'
+  'gemini-1.5-pro',
+  'gemini-1.5-flash',
+  'gemini-flash-lite-latest'
 ];
 
 const MAX_RETRIES = 2;
@@ -78,7 +78,71 @@ async function _callModel(apiKey, model, requestBody, timeoutMs) {
 }
 
 /**
- * Call Google Gemini with structured prompt via header-based auth.
+ * Single attempt to call a Groq Cloud model (Llama 3.3, Mixtral)
+ * @private
+ */
+async function _callGroq(apiKey, model, prompt, options, timeoutMs) {
+  const cleanKey = apiKey.trim();
+  const groqModel = model && !model.includes('gemini') ? model : 'llama-3.3-70b-versatile';
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cleanKey}`
+      },
+      body: JSON.stringify({
+        model: groqModel,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an elite master event planner and coordinator.' + (options.jsonMode ? ' Return strictly valid JSON only.' : '')
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: options.temperature !== undefined ? options.temperature : 0.7,
+        max_tokens: options.maxTokens || 4096,
+        ...(options.jsonMode ? { response_format: { type: 'json_object' } } : {})
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      let errorMsg = `Groq API returned status ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.error?.message) errorMsg = errorData.error.message;
+      } catch { /* use default */ }
+      const err = new Error(errorMsg);
+      err.statusCode = response.status;
+      throw err;
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Groq returned empty response.');
+    return text;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      const e = new Error(`Request to Groq model ${groqModel} timed out.`);
+      e.statusCode = 408;
+      throw e;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Call Google Gemini or Groq Cloud with structured prompt via header-based auth.
  * Automatically retries on 503 (overloaded) with exponential backoff
  * and falls back through the model chain on 404 (deprecated model).
  *
@@ -89,7 +153,15 @@ async function _callModel(apiKey, model, requestBody, timeoutMs) {
  */
 export async function callGemini(apiKey, prompt, options = {}) {
   if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
-    throw new Error('Gemini API key is required to call external GenAI.');
+    throw new Error('API key is required to call external GenAI.');
+  }
+
+  const cleanKey = apiKey.trim();
+  const timeoutMs = options.timeoutMs || 45000;
+  const isGroq = cleanKey.startsWith('gsk_') || (options.model && (options.model.startsWith('llama-') || options.model.startsWith('mixtral-')));
+
+  if (isGroq) {
+    return await _callGroq(cleanKey, options.model, prompt, options, timeoutMs);
   }
 
   const requestBody = {
@@ -100,8 +172,6 @@ export async function callGemini(apiKey, prompt, options = {}) {
       responseMimeType: options.jsonMode ? 'application/json' : 'text/plain'
     }
   };
-
-  const timeoutMs = options.timeoutMs || 45000;
 
   // Build model list: user-specified model first, then fallback chain
   const models = options.model

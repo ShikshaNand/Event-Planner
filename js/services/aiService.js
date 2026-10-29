@@ -13,6 +13,16 @@ export class AIService {
   }
 
   /**
+   * Helper to execute AI call with user's selected model and API key
+   * @private
+   */
+  async _callAI(prompt, options = {}) {
+    const apiKey = this.store.getApiKey();
+    const model = this.store?.getAiModel ? this.store.getAiModel() : 'gemini-2.0-flash';
+    return callGemini(apiKey, prompt, { ...options, model });
+  }
+
+  /**
    * Generates a complete comprehensive Event Blueprint
    * @param {object} params 
    * @returns {Promise<object>}
@@ -54,7 +64,7 @@ Return ONLY a valid JSON object matching this exact schema:
   ]
 }`;
 
-        const rawResponse = await callGemini(apiKey, prompt, { jsonMode: true, temperature: 0.6 });
+        const rawResponse = await this._callAI(prompt, { jsonMode: true, temperature: 0.6 });
         const parsed = safeJSONParse(rawResponse, null);
         if (parsed && Array.isArray(parsed.budgetItems) && parsed.budgetItems.length > 0) {
           return this.normalizeBlueprint(parsed, totalBudget);
@@ -95,7 +105,7 @@ Provide an immediate, authoritative action plan in STRICT JSON format:
   "preventativeAdvice": ["Lesson learned 1", "Lesson learned 2"]
 }`;
 
-        const raw = await callGemini(apiKey, prompt, { jsonMode: true, temperature: 0.4 });
+        const raw = await this._callAI(prompt, { jsonMode: true, temperature: 0.4 });
         const parsed = safeJSONParse(raw, null);
         if (parsed && parsed.immediateActions) {
           return parsed;
@@ -134,7 +144,7 @@ Respond in STRICT JSON format:
   "projectedNewTotal": number
 }`;
 
-        const raw = await callGemini(apiKey, prompt, { jsonMode: true, temperature: 0.5 });
+        const raw = await this._callAI(prompt, { jsonMode: true, temperature: 0.5 });
         const parsed = safeJSONParse(raw, null);
         if (parsed && Array.isArray(parsed.recommendedCuts)) {
           return parsed;
@@ -171,7 +181,7 @@ Respond in STRICT JSON format:
   ]
 }`;
 
-        const raw = await callGemini(apiKey, prompt, { jsonMode: true });
+        const raw = await this._callAI(prompt, { jsonMode: true });
         const parsed = safeJSONParse(raw, null);
         if (parsed && Array.isArray(parsed.ideas)) {
           return parsed.ideas;
@@ -210,7 +220,7 @@ Never be vague. Provide actual examples, timeline numbers, or creative specifics
         }
 
         const prompt = `${systemPrompt}\n\nUser Question: ${question}\n\nAnswer:`;
-        const raw = await callGemini(apiKey, prompt, { jsonMode: false, temperature: 0.7 });
+        const raw = await this._callAI(prompt, { jsonMode: false, temperature: 0.7 });
         if (raw && raw.trim().length > 0) {
           return raw.trim();
         }
@@ -253,7 +263,7 @@ Provide an authoritative compliance and hospitality audit in STRICT JSON format:
   "proactiveActionItem": { "title": "Suggested requirement to add", "notes": "Operational notes for staff" }
 }`;
 
-        const raw = await callGemini(apiKey, prompt, { jsonMode: true, temperature: 0.4 });
+        const raw = await this._callAI(prompt, { jsonMode: true, temperature: 0.4 });
         const parsed = safeJSONParse(raw, null);
         if (parsed && Array.isArray(parsed.pillars)) {
           return parsed;
